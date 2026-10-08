@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>
+   BST Student Record Manager
+  </title>
+  <style>
+   *{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fb;color:#172033}
+header{background:linear-gradient(135deg,#173b7a,#2859a8);color:#fff;padding:22px;text-align:center}
+header h1{margin:0 0 6px;font-size:28px}
+header p{margin:0;opacity:.9}
+.container{max-width:1200px;margin:24px auto;padding:0 16px}
+.card{background:#fff;border-radius:14px;padding:20px;margin-bottom:18px;box-shadow:0 5px 20px rgba(0,0,0,.08)}
+.hidden{display:none!important}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{font-weight:700;display:block;margin-bottom:6px}
+input,select,textarea,button{width:100%;padding:11px;border:1px solid #ccd4e0;border-radius:8px;font-size:15px}
+textarea{min-height:100px;resize:vertical}
+button{cursor:pointer;border:0;background:#2859a8;color:#fff;font-weight:700}
+button:hover{filter:brightness(.94)}
+.btn-danger{background:#c62828}.btn-secondary{background:#64748b}.btn-success{background:#16804b}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tabs button{width:auto;padding:10px 15px}
+.tabs button.active{background:#173b7a}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8eef9;color:#173b7a;font-weight:700}
+.msg{padding:11px;border-radius:8px;margin:10px 0;display:none}
+.msg.show{display:block}.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}.info{background:#e0f2fe;color:#075985}
+.login-wrap{min-height:calc(100vh - 100px);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{max-width:500px;width:100%}
+.login-switch{display:flex;gap:8px;margin-bottom:16px}
+.login-switch button{background:#e5e7eb;color:#172033}.login-switch button.active{background:#2859a8;color:#fff}
+table{width:100%;border-collapse:collapse;margin-top:12px}
+th,td{border:1px solid #dbe2ea;padding:9px;text-align:left}
+th{background:#eef3fa}
+.table-wrap{overflow:auto}
+.subject-row{display:grid;grid-template-columns:1.2fr 2fr .8fr 1fr 1fr;gap:8px;align-items:end;margin-bottom:9px}
+.subject-row input{width:100%}
+.result-head{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#f1f5f9;padding:13px;border-radius:9px}
+.stat strong{display:block;font-size:19px;margin-top:3px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+nav button{width:auto}
+.small{font-size:13px;color:#64748b}
+h2,h3{margin-top:0}
+@media(max-width:700px){.subject-row{grid-template-columns:1fr 1fr}.subject-row .wide{grid-column:1/-1}}
+@media print{
+  body *{visibility:hidden}
+  .container, .container *{visibility:visible}
+  header, nav, button{display:none!important}
+}
+  </style>
+ </head>
+ <body>
+  <header>
+   <h1>
+    Binary Search Tree Based Student Record Manager
+   </h1>
+   <p>
+    Student Result Management System
+   </p>
+  </header>
+  <section class="login-wrap" id="loginPage">
+   <div class="card login-card">
+    <h2>
+     Sign In
+    </h2>
+    <div class="login-switch">
+     <button class="active" id="studentModeBtn" onclick="setLoginMode('student')">
+      Student Login
+     </button>
+     <button id="staffModeBtn" onclick="setLoginMode('staff')">
+      Staff Login
+     </button>
+    </div>
+    <div class="msg" id="loginMessage">
+    </div>
+    <div id="studentLoginBox">
+     <label>
+      Username / PRN
+     </label>
+     <input id="studentUsername" inputmode="numeric" placeholder="Enter PRN"/>
+     <label style="margin-top:12px">
+      Password (exactly 4 digits)
+     </label>
+     <input id="studentPassword" inputmode="numeric" maxlength="4" placeholder="4 digit password" type="password"/>
+     <button onclick="studentLogin()" style="margin-top:15px">
+      Student Sign In
+     </button>
+     <p class="small">
+      Students can sign in only with a registered student account stored in this system.
+     </p>
+    </div>
+    <div class="hidden" id="staffLoginBox">
+     <label>
+      Staff Username
+     </label>
+     <input id="staffUsername" placeholder="Staff username"/>
+     <label style="margin-top:12px">
+      Staff Password
+     </label>
+     <input id="staffPassword" placeholder="Staff password" type="password"/>
+     <button onclick="staffLogin()" style="margin-top:15px">
+      Staff Sign In
+     </button>
+     <p class="small">
+      Default demo staff login:
+      <b>
+       staff
+      </b>
+      /
+      <b>
+       staff123
+      </b>
+     </p>
+    </div>
+   </div>
+  </section>
+  <section class="hidden" id="staffApp">
+   <div class="container">
+    <div class="card">
+     <h2>
+      Staff Dashboard
+     </h2>
+     <p>
+      Manage student records, semester marks, searches, saved records and student doubts.
+     </p>
+     <button class="btn-secondary" onclick="logout()" style="width:auto">
+      Logout
+     </button>
+    </div>
+    <nav id="staffNav">
+     <button onclick="showStaffSection('entry')">
+      Add / Update Result
+     </button>
+     <button onclick="showStaffSection('saved')">
+      Saved Data
+     </button>
+     <button onclick="showStaffSection('binary')">
+      Binary Search
+     </button>
+     <button onclick="showStaffSection('search')">
+      Result Search
+     </button>
+     <button onclick="showStaffSection('complaints')">
+      Student Doubts
+     </button>
+     <button onclick="showStaffSection('delete')">
+      Delete Student
+     </button>
+    </nav>
+    <div class="staff-section card" id="staffEntry">
+     <h2>
+      Add / Update Student Result
+     </h2>
+     <div class="msg" id="entryMessage">
+     </div>
+     <div class="grid">
+      <div>
+       <label>
+        Name
+       </label>
+       <input id="entryName" placeholder="Student name"/>
+      </div>
+      <div>
+       <label>
+        PRN / Username
+       </label>
+       <input id="entryPrn" inputmode="numeric" placeholder="PRN"/>
+      </div>
+      <div>
+       <label>
+        Password (4 digits)
+       </label>
+       <input id="entryPassword" inputmode="numeric" maxlength="4" placeholder="4 digits"/>
+      </div>
+      <div>
+       <label>
+        Mobile Number
+       </label>
+       <input id="entryMobile" inputmode="numeric" maxlength="10" placeholder="10 digit mobile"/>
+      </div>
+      <div>
+       <label>
+        Semester
+       </label>
+       <select id="entrySemester" onchange="loadSemesterEntry()">
+       </select>
+      </div>
+     </div>
+     <div style="margin-top:18px">
+      <h3>
+       Subjects and Marks
+      </h3>
+      <p class="small">
+       Marks are entered manually and are always considered out of 100. Pre-registered marks are already saved; staff can update them.
+      </p>
+      <div id="subjectEditor">
+      </div>
+     </div>
+     <button class="btn-success" onclick="saveStudentResult()" style="margin-top:12px">
+      Save / Update Record
+     </button>
+     <button class="btn-secondary" onclick="clearEntry()" style="margin-top:12px">
+      Clear Form
+     </button>
+    </div>
+    <div class="staff-section card hidden" id="staffSaved">
+     <h2>
+      Saved Student Data
+     </h2>
+     <p class="small">
+      This option shows the data currently saved in this browser.
+     </p>
+     <div id="savedData">
+     </div>
+    </div>
+    <div class="staff-section card hidden" id="staffBinary">
+     <h2>
+      Binary Search
+     </h2>
+     <p>
+      Search the sorted student PRN list using Binary Search.
+     </p>
+     <div class="grid">
+      <div>
+       <label>
+        PRN
+       </label>
+       <input id="binaryPrn" inputmode="numeric"/>
+      </div>
+      <div style="align-self:end">
+       <button onclick="binarySearchStaff()">
+        Search
+       </button>
+      </div>
+     </div>
+     <div id="binaryResult">
+     </div>
+    </div>
+    <div class="staff-section card hidden" id="staffSearch">
+     <h2>
+      Result Search
+     </h2>
+     <div class="grid">
+      <div>
+       <label>
+        PRN / Username
+       </label>
+       <input id="searchPrn" inputmode="numeric"/>
+      </div>
+      <div>
+       <label>
+        Semester
+       </label>
+       <select id="searchSemester">
+       </select>
+      </div>
+      <div style="align-self:end">
+       <button onclick="searchResultStaff()">
+        Search Result
+       </button>
+      </div>
+     </div>
+     <div id="staffSearchResult">
+     </div>
+    </div>
+    <div class="staff-section card hidden" id="staffComplaints">
+     <h2>
+      Student Doubts / Complaints
+     </h2>
+     <div id="complaintsList">
+     </div>
+    </div>
+    <div class="staff-section card hidden" id="staffDelete">
+     <h2>
+      Delete Student
+     </h2>
+     <p class="small">
+      Deleting a student removes the student and all of their saved semester results from this browser.
+     </p>
+     <div class="grid">
+      <div>
+       <label>
+        PRN
+       </label>
+       <input id="deletePrn" inputmode="numeric"/>
+      </div>
+      <div style="align-self:end">
+       <button class="btn-danger" onclick="deleteStudent()">
+        Delete Student
+       </button>
+      </div>
+     </div>
+     <div class="msg" id="deleteMessage">
+     </div>
+    </div>
+   </div>
+  </section>
+  <section class="hidden" id="studentApp">
+   <div class="container">
+    <div class="card">
+     <h2>
+      Student Portal
+     </h2>
+     <div id="studentWelcome">
+     </div>
+     <button class="btn-secondary" onclick="logout()" style="width:auto;margin-top:10px">
+      Logout
+     </button>
+    </div>
+    <nav id="studentNav">
+     <button onclick="showStudentSection('result')">
+      Result Portal
+     </button>
+     <button onclick="showStudentSection('password')">
+      Change Password
+     </button>
+     <button onclick="showStudentSection('complaints')">
+      Raise Doubt
+     </button>
+    </nav>
+    <div class="student-section" id="studentResultSection">
+     <div class="card">
+      <h2>
+       My Result
+      </h2>
+      <div class="grid">
+       <div>
+        <label>
+         Select Semester
+        </label>
+        <select id="studentSemester" onchange="renderStudentResult()">
+        </select>
+       </div>
+      </div>
+      <div id="studentResult" style="margin-top:18px">
+      </div>
+     </div>
+     <div class="card">
+      <h2>
+       Search Other Student Result
+      </h2>
+      <p class="small">
+       Enter another registered student's PRN to view that student's available results.
+      </p>
+      <div class="grid">
+       <div>
+        <label>
+         Student PRN
+        </label>
+        <input id="otherStudentPrn" inputmode="numeric" placeholder="Enter PRN"/>
+       </div>
+       <div>
+        <label>
+         Semester
+        </label>
+        <select id="otherStudentSemester">
+        </select>
+       </div>
+       <div style="align-self:end">
+        <button onclick="searchOtherStudentResult()">
+         Search Result
+        </button>
+       </div>
+      </div>
+      <div id="otherStudentResult" style="margin-top:18px">
+      </div>
+     </div>
+    </div>
+    <div class="student-section card hidden" id="studentPasswordSection">
+     <h2>
+      Change Password
+     </h2>
+     <p class="small">
+      Your new student password must contain exactly 4 digits.
+     </p>
+     <div class="msg" id="passwordMessage">
+     </div>
+     <div class="grid">
+      <div>
+       <label>
+        Current Password
+       </label>
+       <input id="currentPassword" inputmode="numeric" maxlength="4" type="password"/>
+      </div>
+      <div>
+       <label>
+        New Password
+       </label>
+       <input id="newPassword" inputmode="numeric" maxlength="4" type="password"/>
+      </div>
+      <div>
+       <label>
+        Confirm New Password
+       </label>
+       <input id="confirmPassword" inputmode="numeric" maxlength="4" type="password"/>
+      </div>
+     </div>
+     <button onclick="changeStudentPassword()" style="margin-top:12px;max-width:250px">
+      Change Password
+     </button>
+    </div>
+    <div class="student-section card hidden" id="studentComplaintsSection">
+     <h2>
+      Raise a Doubt on Result
+     </h2>
+     <p class="small">
+      Use this form if any subject mark, GPA or other result information appears incorrect.
+     </p>
+     <div class="msg" id="complaintMessage">
+     </div>
+     <div class="grid">
+      <div>
+       <label>
+        Semester
+       </label>
+       <select id="complaintSemester">
+       </select>
+      </div>
+      <div>
+       <label>
+        Subject (optional)
+       </label>
+       <input id="complaintSubject" placeholder="Example: M1"/>
+      </div>
+     </div>
+     <label style="margin-top:12px">
+      Your Doubt / Complaint
+     </label>
+     <textarea id="complaintText" placeholder="Explain the issue clearly"></textarea>
+     <button onclick="submitComplaint()" style="margin-top:12px">
+      Submit Doubt
+     </button>
+    </div>
+   </div>
+  </section>
+  <script>
+   const STORAGE_KEY = "BST_STUDENT_RECORD_MANAGER_V4";
+const COMPLAINT_KEY = "BST_STUDENT_COMPLAINTS_V4";
+const STAFF_USERNAME = "staff";
+const STAFF_PASSWORD = "staff123";
+
+const SEMESTER_TEMPLATES = {
+"Semester 1":[
+{code:"M1",name:"M1",credits:3},{code:"PHYSICS",name:"PHYSICS",credits:2},
+{code:"FEEE",name:"FEEE",credits:2},{code:"EVS",name:"EVS",credits:1},{code:"YOGA",name:"YOGA",credits:1}],
+"Semester 2":[
+{code:"M2",name:"M2",credits:3},{code:"CHEMISTRY",name:"CHEMISTRY",credits:2},
+{code:"FME",name:"FME",credits:2},{code:"PPS",name:"PPS",credits:1},{code:"PHY.EDU",name:"PHY.EDU",credits:1}],
+"Semester 3":[
+{code:"DS",name:"DS",credits:1},{code:"DML",name:"DML",credits:3},{code:"C++",name:"C++",credits:2},
+{code:"AIML",name:"AIML",credits:1},{code:"KRR",name:"KRR",credits:1}],
+"Semester 4":[
+{code:"EM",name:"EM",credits:2},{code:"APP.PHY",name:"APP.PHY",credits:3},
+{code:"APP.CHE",name:"APP.CHE",credits:1},{code:"PYTHON",name:"PYTHON",credits:2},{code:"KCG",name:"KCG",credits:3}],
+"Semester 5":[
+{code:"DATA SCIENCE",name:"DATA SCIENCE",credits:1},{code:"LOGICAL THINKING",name:"LOGICAL THINKING",credits:2},
+{code:"CEP",name:"CEP",credits:1},{code:"PROGRAMMING",name:"PROGRAMMING",credits:2},{code:"DS.2",name:"DS.2",credits:3}],
+"Semester 6":[
+{code:"PROJECT MANAGEMENT",name:"PROJECT MANAGEMENT",credits:2},{code:"PROJECT ENGAGEMENT",name:"PROJECT ENGAGEMENT",credits:3},
+{code:"PROJECT ANALYTICS",name:"PROJECT ANALYTICS",credits:4},{code:"SERVICE ANALYSIS",name:"SERVICE ANALYSIS",credits:3},
+{code:"PYTHON LAB..",name:"PYTHON LAB..",credits:2}],
+"Semester 7":[
+{code:"LIVE PROJCT",name:"LIVE PROJCT",credits:2},{code:"ES.MDM",name:"ES.MDM",credits:2},
+{code:"IND.MANAGEMENT",name:"IND.MANAGEMENT",credits:4},{code:"RECORD MANAGER",name:"RECORD MANAGER",credits:1},
+{code:"HUMSN RIGHTS",name:"HUMSN RIGHTS",credits:2}],
+"Semester 8":[
+{code:"ADVANCED C++",name:"ADVANCED C++",credits:2},{code:"ADVANCED PYTHON",name:"ADVANCED PYTHON",credits:2},
+{code:"ADVANCED JAVA",name:"ADVANCED JAVA",credits:3},{code:"WEB DEVLOPMENT",name:"WEB DEVLOPMENT",credits:4}]
+};
+
+function makeDefaultResult(semester, marks){
+const subjects = clone(SEMESTER_TEMPLATES[semester] || []);
+subjects.forEach((s,i)=>s.marks=marks[i] ?? null);
+return {
+subjects,
+result:calculateResult(subjects),
+updatedAt:"Pre-registered result"
+};
+}
+
+const DEFAULT_STUDENTS = [
+{
+prn:"250105231085",password:"7659",mobile:"7659850711",name:"SAI",
+semesterResults:{
+"Semester 2":makeDefaultResult("Semester 2",[70,69,88,90,72])
+}
+},
+{
+prn:"250105231087",password:"7659",mobile:"7951155284",name:"MAHI",
+semesterResults:{
+"Semester 3":makeDefaultResult("Semester 3",[70,69,88,90,72])
+}
+},
+{
+prn:"250105231510",password:"7659",mobile:"7008574963",name:"BHARATH",
+semesterResults:{
+"Semester 2":makeDefaultResult("Semester 2",[90,79,68,90,82])
+}
+},
+{
+prn:"250105231542",password:"7659",mobile:"7659850123",name:"SIDDU",
+semesterResults:{
+"Semester 1":makeDefaultResult("Semester 1",[60,79,98,90,100])
+}
+},
+{
+prn:"250105231511",password:"7659",mobile:"7252521411",name:"PRASHU",
+semesterResults:{
+"Semester 4":makeDefaultResult("Semester 4",[80,59,88,90,72])
+}
+},
+{
+prn:"250105231089",password:"7659",mobile:"7098507284",name:"BHUVI",
+semesterResults:{
+"Semester 5":makeDefaultResult("Semester 5",[66,94,88,90,77])
+}
+}
+];
+
+let students = loadStudents();
+let complaints = JSON.parse(localStorage.getItem(COMPLAINT_KEY) || "[]");
+let loggedStudent = null;
+
+class Node {
+constructor(data){this.data=data;this.left=null;this.right=null;}
+}
+class BST {
+constructor(){this.root=null;}
+insert(data){
+const node=new Node(data);
+if(!this.root){this.root=node;return;}
+let cur=this.root;
+while(true){
+if(data.prn < cur.data.prn){if(cur.left)cur=cur.left;else{cur.left=node;return;}}
+else if(data.prn > cur.data.prn){if(cur.right)cur=cur.right;else{cur.right=node;return;}}
+else{return;}
+}}
+search(prn){
+let cur=this.root;
+while(cur){
+if(prn===cur.data.prn)return cur.data;
+cur=prn<cur.data.prn?cur.left:cur.right;
+}
+return null;
+}
+inorder(node=this.root,out=[]){if(!node)return out;this.inorder(node.left,out);out.push(node.data);this.inorder(node.right,out);return out;}
+}
+let bst=new BST();
+
+function clone(obj){return JSON.parse(JSON.stringify(obj));}
+function blankResults(){return {};}
+
+function loadStudents(){
+let saved=[];
+try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");}catch(e){saved=[];}
+if(!Array.isArray(saved))saved=[];
+
+const map=new Map(saved.map(s=>[String(s.prn),s]));
+
+DEFAULT_STUDENTS.forEach(d=>{
+if(!map.has(d.prn)){
+map.set(d.prn,clone(d));
+}else{
+const s=map.get(d.prn);
+s.name=d.name;
+s.mobile=d.mobile;
+s.password=d.password;
+s.semesterResults=s.semesterResults||{};
+
+Object.keys(d.semesterResults||{}).forEach(sem=>{
+s.semesterResults[sem]=clone(d.semesterResults[sem]);
+});
+}
+});
+
+return [...map.values()];
+}
+function persist(){
+localStorage.setItem(STORAGE_KEY,JSON.stringify(students));
+rebuildBST();renderSavedData();renderComplaints();
+}
+function rebuildBST(){bst=new BST();students.forEach(s=>bst.insert(s));}
+function saveComplaints(){localStorage.setItem(COMPLAINT_KEY,JSON.stringify(complaints));}
+function showMsg(id,text,type="info"){
+const el=document.getElementById(id);if(!el)return;
+el.textContent=text;el.className="msg show "+type;
+}
+function hideMsg(id){const el=document.getElementById(id);if(el)el.className="msg";}
+
+function setLoginMode(mode){
+document.getElementById("studentModeBtn").classList.toggle("active",mode==="student");
+document.getElementById("staffModeBtn").classList.toggle("active",mode==="staff");
+document.getElementById("studentLoginBox").classList.toggle("hidden",mode!=="student");
+document.getElementById("staffLoginBox").classList.toggle("hidden",mode!=="staff");
+hideMsg("loginMessage");
+}
+function staffLogin(){
+const u=document.getElementById("staffUsername").value.trim();
+const p=document.getElementById("staffPassword").value;
+if(u===STAFF_USERNAME&&p===STAFF_PASSWORD){
+document.getElementById("loginPage").classList.add("hidden");
+document.getElementById("staffApp").classList.remove("hidden");
+document.getElementById("studentApp").classList.add("hidden");
+showStaffSection("entry");clearEntry();return;
+}
+showMsg("loginMessage","Invalid staff username or password.","error");
+}
+function studentLogin(){
+const prn=document.getElementById("studentUsername").value.trim();
+const pw=document.getElementById("studentPassword").value;
+if(!/^\d+$/.test(prn)){showMsg("loginMessage","Enter a valid PRN.","error");return;}
+if(!/^\d{4}$/.test(pw)){showMsg("loginMessage","Student password must contain exactly 4 digits.","error");return;}
+const s=students.find(x=>String(x.prn)===prn);
+if(!s||s.password!==pw){showMsg("loginMessage","Student login failed. Use only a registered PRN and its 4-digit password.","error");return;}
+loggedStudent=s;
+document.getElementById("loginPage").classList.add("hidden");
+document.getElementById("staffApp").classList.add("hidden");
+document.getElementById("studentApp").classList.remove("hidden");
+document.getElementById("studentWelcome").innerHTML="<span class='badge'>Logged in</span> <b>"+escapeHtml(s.name)+"</b> | PRN: <b>"+escapeHtml(s.prn)+"</b>";
+fillSemesterSelects();
+document.getElementById("studentSemester").value="Semester 1";
+document.getElementById("otherStudentSemester").value="Semester 1";
+showStudentSection("result");
+renderStudentResult();
+}
+function logout(){
+loggedStudent=null;
+document.getElementById("staffApp").classList.add("hidden");
+document.getElementById("studentApp").classList.add("hidden");
+document.getElementById("loginPage").classList.remove("hidden");
+document.getElementById("studentUsername").value="";
+document.getElementById("studentPassword").value="";
+document.getElementById("staffPassword").value="";
+hideMsg("loginMessage");
+}
+
+function fillSemesterSelects(){
+["entrySemester","searchSemester","studentSemester","otherStudentSemester","complaintSemester"].forEach(id=>{
+const el=document.getElementById(id);if(!el)return;
+const old=el.value;el.innerHTML="";
+Object.keys(SEMESTER_TEMPLATES).forEach(sem=>{
+const o=document.createElement("option");o.value=sem;o.textContent=sem;el.appendChild(o);
+});
+if(old&&[...el.options].some(o=>o.value===old))el.value=old;
+});
+}
+function showStaffSection(name){
+document.querySelectorAll(".staff-section").forEach(x=>x.classList.add("hidden"));
+document.getElementById("staff"+name.charAt(0).toUpperCase()+name.slice(1)).classList.remove("hidden");
+if(name==="saved")renderSavedData();
+if(name==="complaints")renderComplaints();
+if(name==="entry")loadSemesterEntry();
+}
+function showStudentSection(name){
+document.querySelectorAll(".student-section").forEach(x=>x.classList.add("hidden"));
+document.getElementById("student"+name.charAt(0).toUpperCase()+name.slice(1)+"Section").classList.remove("hidden");
+}
+function escapeHtml(v){
+return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function loadSemesterEntry(){
+const sem=document.getElementById("entrySemester").value;
+const prn=document.getElementById("entryPrn").value.trim();
+const student=students.find(s=>s.prn===prn);
+const existing=student&&student.semesterResults&&student.semesterResults[sem]?student.semesterResults[sem]:null;
+let subjects=clone(SEMESTER_TEMPLATES[sem]||[]);
+if(existing&&Array.isArray(existing.subjects)){
+subjects=existing.subjects.map(x=>({code:x.code,name:x.name,credits:Number(x.credits),marks:x.marks}));
+}
+renderSubjectEditor(subjects);
+if(student){
+document.getElementById("entryName").value=student.name||"";
+document.getElementById("entryPassword").value=student.password||"";
+document.getElementById("entryMobile").value=student.mobile||"";
+}
+}
+function renderSubjectEditor(subjects){
+const box=document.getElementById("subjectEditor");
+if(!subjects.length){
+box.innerHTML="<div class='msg show info'>No subjects configured.</div>";return;
+}
+box.innerHTML=subjects.map((s,i)=>`
+<div class="subject-row">
+<div><label>Code</label><input id="subCode${i}" value="${escapeHtml(s.code)}"></div>
+<div><label>Subject</label><input id="subName${i}" value="${escapeHtml(s.name)}"></div>
+<div><label>Credits</label><input id="subCredits${i}" type="number" min="1" value="${escapeHtml(s.credits)}"></div>
+<div><label>Marks / 100</label><input id="subMarks${i}" type="number" min="0" max="100" placeholder="0-100" value="${s.marks!==null&&s.marks!==undefined?escapeHtml(s.marks):""}"></div>
+<div><label>Grade</label><input id="subGrade${i}" readonly></div>
+</div>`).join("");
+subjects.forEach((s,i)=>{
+document.getElementById("subMarks"+i).addEventListener("input",()=>updateGrade(i));
+updateGrade(i);
+});
+}
+function gradeForMarks(m){
+m=Number(m);
+if(m>=90)return {grade:"O",point:10};
+if(m>=80)return {grade:"A+",point:9};
+if(m>=70)return {grade:"A",point:8};
+if(m>=60)return {grade:"B+",point:7};
+if(m>=50)return {grade:"B",point:6};
+if(m>=40)return {grade:"C",point:5};
+return {grade:"F",point:0};
+}
+function updateGrade(i){
+const m=document.getElementById("subMarks"+i).value;
+document.getElementById("subGrade"+i).value=m===""?"":gradeForMarks(m).grade;
+}
+function readSubjects(){
+const count=document.querySelectorAll("[id^='subCode']").length;
+const arr=[];
+for(let i=0;i<count;i++){
+const code=document.getElementById("subCode"+i).value.trim();
+const name=document.getElementById("subName"+i).value.trim();
+const credits=Number(document.getElementById("subCredits"+i).value);
+const marksValue=document.getElementById("subMarks"+i).value.trim();
+if(!code||!name||!Number.isFinite(credits)||credits<=0)throw new Error("Complete the subject and credit fields.");
+if(marksValue!==""&&(Number(marksValue)<0||Number(marksValue)>100))throw new Error("Marks must be between 0 and 100.");
+arr.push({code,name,credits,marks:marksValue===""?null:Number(marksValue)});
+}
+return arr;
+}
+function calculateResult(subjects){
+if(!subjects.length)return {published:false,gpa:null,totalCredits:0};
+let weighted=0,totalCredits=0;
+for(const s of subjects){
+if(s.marks===null||s.marks==="")return {published:false,gpa:null,totalCredits:subjects.reduce((a,x)=>a+Number(x.credits),0)};
+const g=gradeForMarks(s.marks);weighted+=Number(s.credits)*g.point;totalCredits+=Number(s.credits);
+}
+return {published:true,gpa:totalCredits?(weighted/totalCredits).toFixed(2):"0.00",totalCredits};
+}
+function saveStudentResult(){
+try{
+const name=document.getElementById("entryName").value.trim();
+const prn=document.getElementById("entryPrn").value.trim();
+const password=document.getElementById("entryPassword").value.trim();
+const mobile=document.getElementById("entryMobile").value.trim();
+const sem=document.getElementById("entrySemester").value;
+if(!name||!prn)throw new Error("Name and PRN are required.");
+if(!/^\d+$/.test(prn))throw new Error("PRN must contain digits only.");
+if(!/^\d{4}$/.test(password))throw new Error("Password must contain exactly 4 digits.");
+if(!/^\d{10}$/.test(mobile))throw new Error("Mobile number must contain exactly 10 digits.");
+const subjects=readSubjects();
+const result=calculateResult(subjects);
+let s=students.find(x=>x.prn===prn);
+if(!s){
+s={prn,password,mobile,name,semesterResults:{}};
+students.push(s);
+}else{
+s.name=name;s.password=password;s.mobile=mobile;s.semesterResults=s.semesterResults||{};
+}
+s.semesterResults[sem]={subjects,result,updatedAt:new Date().toLocaleString()};
+persist();
+showMsg("entryMessage",`${name}'s ${sem} record was saved successfully. ${result.published?"GPA: "+result.gpa:"Marks incomplete — GPA will appear after all marks are entered."}`,"success");
+}catch(e){showMsg("entryMessage",e.message,"error");}
+}
+function clearEntry(){
+["entryName","entryPrn","entryPassword","entryMobile"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("entrySemester").value="Semester 1";
+loadSemesterEntry();hideMsg("entryMessage");
+}
+
+function renderSavedData(){
+const box=document.getElementById("savedData");
+if(!students.length){box.innerHTML="<p>No records saved.</p>";return;}
+const rows=students.slice().sort((a,b)=>a.prn.localeCompare(b.prn)).map(s=>{
+const published=Object.keys(s.semesterResults||{}).filter(k=>s.semesterResults[k].result&&s.semesterResults[k].result.published).length;
+return `<tr><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.prn)}</td><td>${escapeHtml(s.mobile)}</td><td>${published}</td><td>${escapeHtml(s.semesterResults&&Object.keys(s.semesterResults).join(", ")||"No results")}</td></tr>`;
+}).join("");
+box.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Name</th><th>PRN</th><th>Mobile</th><th>Published Semesters</th><th>Saved Semesters</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function binarySearchStaff(){
+const target=document.getElementById("binaryPrn").value.trim();
+const arr=students.slice().sort((a,b)=>a.prn.localeCompare(b.prn));
+let lo=0,hi=arr.length-1,found=null;
+while(lo<=hi){
+const mid=Math.floor((lo+hi)/2);
+if(arr[mid].prn===target){found=arr[mid];break;}
+if(arr[mid].prn<target)lo=mid+1;else hi=mid-1;
+}
+const box=document.getElementById("binaryResult");
+box.innerHTML=found?studentSummary(found):"<div class='msg show error'>Student not found using Binary Search.</div>";
+}
+function studentSummary(s){
+return `<div class="card" style="margin-top:15px"><div class="result-head">
+<div class="stat">NAME<strong>${escapeHtml(s.name)}</strong></div>
+<div class="stat">PRN<strong>${escapeHtml(s.prn)}</strong></div>
+<div class="stat">MOBILE<strong>${escapeHtml(s.mobile)}</strong></div>
+</div></div>`;
+}
+function searchResultStaff(){
+const prn=document.getElementById("searchPrn").value.trim();
+const sem=document.getElementById("searchSemester").value;
+const s=bst.search(prn);
+const box=document.getElementById("staffSearchResult");
+if(!s){box.innerHTML="<div class='msg show error'>Student not found.</div>";return;}
+box.innerHTML=renderResult(s,sem,true);
+}
+function renderResult(s,sem,staffView=false){
+const record=s.semesterResults&&s.semesterResults[sem];
+if(!record)return `<div class="msg show info">No result has been saved for ${escapeHtml(sem)} for this student.</div>`;
+const r=record.result||calculateResult(record.subjects||[]);
+const rows=(record.subjects||[]).map(x=>{
+const g=x.marks===null||x.marks===""?"—":gradeForMarks(x.marks).grade;
+return `<tr><td>${escapeHtml(x.code)}</td><td>${escapeHtml(x.name)}</td><td>${x.credits}</td><td>${x.marks===null||x.marks===""?"—":x.marks} / 100</td><td>${g}</td></tr>`;
+}).join("");
+return `<div class="result-head">
+<div class="stat">NAME<strong>${escapeHtml(s.name)}</strong></div>
+<div class="stat">PRN<strong>${escapeHtml(s.prn)}</strong></div>
+<div class="stat">GPA<strong>${r.published?r.gpa:"Not Published"}</strong></div>
+<div class="stat">SEMESTER<strong>${escapeHtml(sem)}</strong></div>
+</div>
+<div class="table-wrap"><table><thead><tr><th>Code</th><th>Subject</th><th>Credits</th><th>Marks</th><th>Grade</th></tr></thead><tbody>${rows}</tbody></table></div>
+<p class="small">Last updated: ${escapeHtml(record.updatedAt||"—")}</p>
+${staffView?`<button style="max-width:220px;margin-top:10px" onclick="editStudent('${escapeHtml(s.prn)}','${escapeHtml(sem)}')">Edit This Record</button>`:""}
+<button class="btn-secondary" style="max-width:220px;margin-top:10px" onclick="window.print()">Print Result</button>`;
+}
+function editStudent(prn,sem){
+const s=students.find(x=>x.prn===prn);if(!s)return;
+showStaffSection("entry");
+document.getElementById("entryName").value=s.name;
+document.getElementById("entryPrn").value=s.prn;
+document.getElementById("entryPassword").value=s.password;
+document.getElementById("entryMobile").value=s.mobile;
+document.getElementById("entrySemester").value=sem;
+loadSemesterEntry();
+window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function renderStudentResult(){
+if(!loggedStudent)return;
+const sem=document.getElementById("studentSemester").value;
+const fresh=students.find(s=>s.prn===loggedStudent.prn);
+if(fresh)loggedStudent=fresh;
+document.getElementById("studentResult").innerHTML=renderResult(loggedStudent,sem,false);
+}
+function searchOtherStudentResult(){
+if(!loggedStudent)return;
+const prn=document.getElementById("otherStudentPrn").value.trim();
+const sem=document.getElementById("otherStudentSemester").value;
+const box=document.getElementById("otherStudentResult");
+
+if(!/^\d+$/.test(prn)){
+box.innerHTML="<div class='msg show error'>Enter a valid PRN.</div>";
+return;
+}
+
+const student=bst.search(prn);
+if(!student){
+box.innerHTML="<div class='msg show error'>No registered student was found with this PRN.</div>";
+return;
+}
+
+box.innerHTML=renderResult(student,sem,false);
+}
+
+function changeStudentPassword(){
+if(!loggedStudent)return;
+
+const current=document.getElementById("currentPassword").value.trim();
+const next=document.getElementById("newPassword").value.trim();
+const confirm=document.getElementById("confirmPassword").value.trim();
+
+if(!/^\d{4}$/.test(current)){
+showMsg("passwordMessage","Current password must contain exactly 4 digits.","error");
+return;
+}
+if(current!==loggedStudent.password){
+showMsg("passwordMessage","Current password is incorrect.","error");
+return;
+}
+if(!/^\d{4}$/.test(next)){
+showMsg("passwordMessage","New password must contain exactly 4 digits.","error");
+return;
+}
+if(next!==confirm){
+showMsg("passwordMessage","New password and confirmation do not match.","error");
+return;
+}
+if(next===current){
+showMsg("passwordMessage","New password must be different from the current password.","error");
+return;
+}
+
+const student=students.find(s=>s.prn===loggedStudent.prn);
+if(!student){
+showMsg("passwordMessage","Student account could not be found.","error");
+return;
+}
+
+student.password=next;
+loggedStudent=student;
+persist();
+
+document.getElementById("currentPassword").value="";
+document.getElementById("newPassword").value="";
+document.getElementById("confirmPassword").value="";
+showMsg("passwordMessage","Password changed successfully. Use your new 4-digit password the next time you log in.","success");
+}
+
+function submitComplaint(){
+if(!loggedStudent)return;
+const sem=document.getElementById("complaintSemester").value;
+const subject=document.getElementById("complaintSubject").value.trim();
+const text=document.getElementById("complaintText").value.trim();
+if(!text){showMsg("complaintMessage","Please enter your doubt or complaint.","error");return;}
+complaints.push({id:Date.now(),studentName:loggedStudent.name,prn:loggedStudent.prn,semester:sem,subject,text,status:"Open",createdAt:new Date().toLocaleString()});
+saveComplaints();
+document.getElementById("complaintSubject").value="";
+document.getElementById("complaintText").value="";
+showMsg("complaintMessage","Your doubt has been submitted to the staff.","success");
+}
+function renderComplaints(){
+const box=document.getElementById("complaintsList");
+if(!complaints.length){box.innerHTML="<div class='msg show info'>No student doubts have been raised.</div>";return;}
+box.innerHTML=complaints.slice().reverse().map(c=>`
+<div class="card" style="border-left:5px solid #2859a8">
+<p><b>${escapeHtml(c.studentName)}</b> | PRN: <b>${escapeHtml(c.prn)}</b> | ${escapeHtml(c.semester)}</p>
+<p><b>Subject:</b> ${escapeHtml(c.subject||"General Result")}</p>
+<p>${escapeHtml(c.text)}</p>
+<p class="small">Submitted: ${escapeHtml(c.createdAt)} | Status: <b>${escapeHtml(c.status)}</b></p>
+<button class="btn-success" style="width:auto" onclick="closeComplaint(${c.id})">Mark Resolved</button>
+</div>`).join("");
+}
+function closeComplaint(id){
+const c=complaints.find(x=>x.id===id);if(c)c.status="Resolved";
+saveComplaints();renderComplaints();
+}
+function deleteStudent(){
+const prn=document.getElementById("deletePrn").value.trim();
+const index=students.findIndex(s=>s.prn===prn);
+if(index<0){showMsg("deleteMessage","Student not found.","error");return;}
+const name=students[index].name;
+if(!confirm(`Delete ${name} (${prn}) and all semester results?`))return;
+students.splice(index,1);persist();
+showMsg("deleteMessage",`${name} was deleted successfully.`,"success");
+document.getElementById("deletePrn").value="";
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+rebuildBST();fillSemesterSelects();loadSemesterEntry();renderSavedData();renderComplaints();
+document.getElementById("entryPrn").addEventListener("input",()=>{if(document.getElementById("entryPrn").value.length>=6)loadSemesterEntry();});
+})
+  </script>
+ </body>
+</html>
